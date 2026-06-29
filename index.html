@@ -105,7 +105,7 @@
             </div>
             
             <div class="table-container overflow-x-auto rounded-xl border-none md:border md:border-gray-200" id="tableWrapper">
-                <table class="w-full text-left" id="dataTable">
+                <table class="w-full text-left table-fixed" id="dataTable">
                     <thead class="text-rayong-dark bg-rayong-light border-b border-gray-200">
                         <tr id="tableHeader"></tr>
                     </thead>
@@ -180,22 +180,35 @@
             
             const urlColIndex = headers.findIndex(h => h && h.toLowerCase().includes('url'));
             const projColIndex = headers.findIndex(h => h && (h.includes('โครงการ') || h.includes('กิจกรรม')));
+            const dateColIndex = headers.findIndex(h => h && h.includes('วันที่'));
+            const respColIndex = headers.findIndex(h => h && h.includes('รับผิดชอบ'));
 
-            // เตรียมชื่อหัวตารางไว้ใช้แสดงเป็น Label ในหน้าจอมือถือ
-            const visibleHeaders = headers.map((h, index) => index === 0 ? 'ลำดับที่' : h);
+            // กำหนด Emoji หัวตาราง
+            const getEmoji = (h, index) => {
+                if (index === 0) return '🔢 ลำดับที่';
+                if (h.includes('วันที่')) return '📅 ' + h;
+                if (h.includes('โครงการ') || h.includes('กิจกรรม')) return '📝 ' + h;
+                if (h.includes('รับผิดชอบ')) return '👤 ' + h;
+                return h;
+            };
+
+            // กำหนดความกว้าง % (รวมต้องไม่เกิน 100)
+            const getWidth = (index) => {
+                if (index === 0) return '5%';
+                if (index === dateColIndex) return '15%';
+                if (index === projColIndex) return '65%';
+                if (index === respColIndex) return '15%';
+                return 'auto';
+            };
 
             headEl.innerHTML = '';
             headers.forEach((h, index) => {
                 if (index === urlColIndex) return; 
                 
-                const headerText = visibleHeaders[index];
+                const headerText = getEmoji(h, index);
+                const width = getWidth(index);
                 
-                // CSS บังคับ: คอลัมน์โครงการขยายกว้างสุด คอลัมน์อื่นบีบให้แคบสุดที่ข้อความจะอยู่ได้ (w-1)
-                const thClass = (index === projColIndex) 
-                    ? "px-4 md:px-6 py-4 font-semibold text-gray-800" 
-                    : "px-4 md:px-6 py-4 font-semibold text-gray-800 whitespace-nowrap w-1";
-                    
-                headEl.innerHTML += `<th class="${thClass}">${headerText}</th>`;
+                headEl.innerHTML += `<th class="px-4 py-4 font-semibold text-gray-800" style="width: ${width}">${headerText}</th>`;
             });
 
             bodyEl.innerHTML = '';
@@ -210,24 +223,11 @@
                     let cellContent = String(cell);
                     
                     if (colIndex === projColIndex && isValidUrl && cellContent !== '') {
-                        // นำคลาส block ออก เพื่อให้ข้อความไหลตามความกว้างของคอลัมน์ได้อย่างเป็นธรรมชาติ
                         cellContent = `<a href="${urlValue}" target="_blank" class="text-rayong hover:text-rayong-dark font-medium underline underline-offset-4 decoration-purple-300 hover:decoration-rayong transition duration-200 break-words">${cellContent} <i class="fas fa-download ml-1 text-[0.85em]"></i></a>`;
-                    } else if (cellContent.startsWith('http')) {
-                        cellContent = `<a href="${cellContent}" target="_blank" class="inline-flex items-center px-3 py-1 bg-rayong-light text-rayong hover:bg-rayong hover:text-white rounded-full text-[0.85em] font-medium transition duration-200"><i class="fas fa-external-link-alt mr-1"></i> เปิดดูลิงก์</a>`;
                     }
 
-                    let tdClass = 'px-4 md:px-6 py-4 align-top ';
-                    
-                    if (colIndex === 0) {
-                        tdClass += 'font-medium text-gray-900 md:whitespace-nowrap';
-                    } else if (colIndex === projColIndex) {
-                        tdClass += 'text-gray-800 break-words'; 
-                    } else {
-                        tdClass += 'text-gray-700 md:whitespace-nowrap'; 
-                    }
-
-                    // ใส่ data-label ไว้สำหรับใช้แสดงชื่อหัวตารางบนหน้าจอมือถือ
-                    const label = visibleHeaders[colIndex] || '';
+                    let tdClass = 'px-4 py-4 align-top break-words';
+                    const label = headers[colIndex] || '';
                     html += `<td class="${tdClass}" data-label="${label}">${cellContent}</td>`;
                 });
                 bodyEl.innerHTML += html + '</tr>';
