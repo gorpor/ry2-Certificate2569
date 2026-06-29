@@ -4,9 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ทะเบียนเกียรติบัตร | กลุ่มนิเทศฯ สพป.ระยอง เขต 2</title>
+    
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
+    
     <script>
         tailwind.config = {
             theme: {
@@ -25,25 +27,31 @@
 </head>
 <body class="flex flex-col min-h-screen">
     <header class="bg-gradient-to-r from-rayong-dark via-rayong to-purple-500 shadow-lg py-8">
-        <div class="container mx-auto px-4 text-center text-white">
-            <div class="inline-block bg-white/20 backdrop-blur-sm px-4 py-1 rounded-full text-sm mb-3">
-                <i class="fas fa-award mr-2 text-yellow-300"></i><span id="budgetYearText">กำลังโหลดปีงบประมาณ...</span>
+        <div class="container mx-auto px-4 flex flex-col md:flex-row items-center justify-center md:justify-start gap-6">
+            <div class="bg-white p-2 rounded-full shadow-xl">
+                <img src="https://lh5.googleusercontent.com/d/11lT0KghZEJcvK8GjV_IHeB3Xz8HqXjNj" alt="โลโก้ สพป.ระยอง เขต 2" class="w-24 h-24 object-contain rounded-full">
             </div>
-            <h1 class="text-3xl md:text-4xl font-bold mb-2">ระบบทะเบียนเกียรติบัตร</h1>
-            <p class="text-purple-200">กลุ่มนิเทศ ติดตาม และประเมินผลการจัดการศึกษา สพป.ระยอง เขต 2</p>
+            <div class="text-center md:text-left text-white">
+                <div class="inline-block bg-white/20 backdrop-blur-sm px-4 py-1 rounded-full text-sm mb-3">
+                    <i class="fas fa-award mr-2 text-yellow-300"></i><span id="budgetYearText">กำลังโหลดปีงบประมาณ...</span>
+                </div>
+                <h1 class="text-3xl md:text-4xl font-bold mb-2">ระบบทะเบียนเกียรติบัตร</h1>
+                <p class="text-purple-200">กลุ่มนิเทศ ติดตาม และประเมินผลการจัดการศึกษา สพป.ระยอง เขต 2</p>
+            </div>
         </div>
     </header>
 
     <main class="flex-grow container mx-auto px-4 py-8">
         <div class="bg-white rounded-2xl shadow-xl p-8">
             <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-                <div class="text-gray-600 font-medium"><i class="fas fa-list text-rayong mr-2"></i> รายการเกียรติบัตร</div>
+                <div class="text-gray-600 font-medium"><i class="fas fa-list text-rayong mr-2"></i> รายการเกียรติบัตรทั้งหมด</div>
                 <div class="flex items-center gap-3">
                     <div class="flex items-center bg-gray-50 border border-gray-200 rounded-lg p-1">
-                        <button onclick="changeFontSize(-1)" class="px-3 py-1 text-gray-600 hover:text-rayong">A-</button>
-                        <button onclick="changeFontSize(1)" class="px-3 py-1 text-gray-600 hover:text-rayong">A+</button>
+                        <button onclick="changeFontSize(-1)" class="px-3 py-1 text-gray-600 hover:text-rayong font-bold">A-</button>
+                        <div class="w-px h-5 bg-gray-300"></div>
+                        <button onclick="changeFontSize(1)" class="px-3 py-1 text-gray-600 hover:text-rayong font-bold">A+</button>
                     </div>
-                    <input type="text" id="searchInput" class="bg-gray-50 border border-gray-300 rounded-xl p-2.5 w-64" placeholder="ค้นหา..." onkeyup="filterTable()">
+                    <input type="text" id="searchInput" class="bg-gray-50 border border-gray-300 rounded-xl p-2.5 w-64" placeholder="ค้นหาชื่อโครงการ..." onkeyup="filterTable()">
                 </div>
             </div>
             <div class="overflow-x-auto" id="tableWrapper">
@@ -56,6 +64,13 @@
             </div>
         </div>
     </main>
+
+    <footer class="bg-rayong-dark text-white py-8 mt-auto">
+        <div class="container mx-auto px-4 text-center">
+            <p class="font-semibold">กลุ่มนิเทศ ติดตาม และประเมินผลการจัดการศึกษา</p>
+            <p class="text-sm text-purple-300">สำนักงานเขตพื้นที่การศึกษาประถมศึกษาระยอง เขต 2</p>
+        </div>
+    </footer>
 
     <script>
         let currentTableFontSize = 16;
@@ -73,14 +88,17 @@
                 const text = await response.text();
                 const json = JSON.parse(text.substring(47).slice(0, -2));
                 
-                // ค้นหาค่าจากแถวแรกของข้อมูล (rows[0]) ในคอลัมน์ชื่อ 'year'
-                const cols = json.table.cols.map(c => c.label ? c.label.toLowerCase() : '');
-                const yearIdx = cols.indexOf('year');
-                if (yearIdx !== -1 && json.table.rows.length > 0) {
-                    const cell = json.table.rows[0].c[yearIdx];
+                // ดึงข้อมูลจากคอลัมน์ A (index 0) แถวที่ 2 (rows[0] เพราะแถวแรกถูกนับเป็น header)
+                if (json.table.rows.length > 0) {
+                    const cell = json.table.rows[0].c[0];
                     document.getElementById('budgetYearText').textContent = cell ? (cell.f || cell.v) : 'ไม่พบข้อมูลปี';
+                } else {
+                    document.getElementById('budgetYearText').textContent = 'ไม่พบข้อมูลปี';
                 }
-            } catch (e) { console.error(e); }
+            } catch (e) { 
+                console.error(e); 
+                document.getElementById('budgetYearText').textContent = 'ไม่พบข้อมูลปี';
+            }
         }
 
         async function fetchSheetData() {
@@ -88,7 +106,7 @@
             const response = await fetch(url);
             const text = await response.text();
             const json = JSON.parse(text.substring(47).slice(0, -2));
-            const headers = json.table.cols.map(c => c.label);
+            const headers = json.table.cols.map(c => c ? c.label : '');
             const rows = json.table.rows.map(r => r.c.map(c => c ? (c.f || c.v || '') : ''));
             
             renderTable(headers, rows);
@@ -97,10 +115,42 @@
         function renderTable(headers, rows) {
             const headEl = document.getElementById('tableHeader');
             const bodyEl = document.getElementById('tableBody');
-            headers.forEach(h => headEl.innerHTML += `<th class="px-6 py-4">${h}</th>`);
+            
+            // หา index ของคอลัมน์ url และ โครงการ
+            const urlColIndex = headers.findIndex(h => h && h.toLowerCase().includes('url'));
+            const projColIndex = headers.findIndex(h => h && (h.includes('โครงการ') || h.includes('กิจกรรม')));
+
+            headEl.innerHTML = '';
+            headers.forEach((h, index) => {
+                if (index === urlColIndex) return; // ซ่อนคอลัมน์ url
+                
+                // กำหนดให้คอลัมน์แรกชื่อ "ลำดับที่"
+                const headerText = index === 0 ? 'ลำดับที่' : h;
+                headEl.innerHTML += `<th class="px-6 py-4 whitespace-nowrap">${headerText}</th>`;
+            });
+
+            bodyEl.innerHTML = '';
             rows.forEach(row => {
+                const urlValue = urlColIndex !== -1 ? String(row[urlColIndex]).trim() : '';
+                const isValidUrl = urlValue.startsWith('http');
+
                 let html = '<tr class="border-b hover:bg-purple-50">';
-                row.forEach(cell => html += `<td class="px-6 py-4 text-gray-700">${cell}</td>`);
+                row.forEach((cell, colIndex) => {
+                    if (colIndex === urlColIndex) return; // ซ่อนการแสดงผลคอลัมน์ url
+
+                    let cellContent = String(cell);
+                    
+                    // ทำลิงก์ดาวน์โหลดที่ชื่อโครงการ
+                    if (colIndex === projColIndex && isValidUrl && cellContent !== '') {
+                        cellContent = `<a href="${urlValue}" target="_blank" class="text-rayong hover:text-rayong-dark font-medium underline underline-offset-4 decoration-purple-300 hover:decoration-rayong transition duration-200">${cellContent} <i class="fas fa-download ml-1 text-[0.85em]"></i></a>`;
+                    } else if (cellContent.startsWith('http')) {
+                        cellContent = `<a href="${cellContent}" target="_blank" class="inline-flex items-center px-3 py-1 bg-rayong-light text-rayong hover:bg-rayong hover:text-white rounded-full text-[0.85em] font-medium transition duration-200"><i class="fas fa-external-link-alt mr-1"></i> เปิดดูลิงก์</a>`;
+                    }
+
+                    // จัดสไตล์ให้คอลัมน์แรกลำดับที่เป็นตัวหนา
+                    const tdClass = colIndex === 0 ? 'px-6 py-4 font-medium text-gray-900' : 'px-6 py-4 text-gray-700';
+                    html += `<td class="${tdClass}">${cellContent}</td>`;
+                });
                 bodyEl.innerHTML += html + '</tr>';
             });
         }
