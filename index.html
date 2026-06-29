@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ทะเบียนเกียรติบัตร | กลุ่มนิเทศฯ สพป.ระยอง เขต 2</title>
+    
+    <!-- Google Fonts: Prompt for a formal and modern Thai look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        prompt: ['Prompt', 'sans-serif'],
+                    },
+                    colors: {
+                        rayong: {
+                            light: '#f3e8ff', // purple-100
+                            DEFAULT: '#7e22ce', // purple-700
+                            dark: '#581c87', // purple-900
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Prompt', sans-serif;
+            background-color: #f8fafc;
+        }
+        
+        /* Custom scrollbar for table */
+        .table-container::-webkit-scrollbar {
+            height: 8px;
+            width: 8px;
+        }
+        .table-container::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+            border-radius: 4px;
+        }
+        .table-container::-webkit-scrollbar-thumb {
+            background: #c084fc; 
+            border-radius: 4px;
+        }
+        .table-container::-webkit-scrollbar-thumb:hover {
+            background: #9333ea; 
+        }
+
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #7e22ce;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+    <!-- Header / Banner Section -->
+    <header class="bg-gradient-to-r from-rayong-dark via-rayong to-purple-500 shadow-lg relative overflow-hidden">
+        <!-- Decorative subtle pattern -->
+        <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+        
+        <div class="container mx-auto px-4 py-8 md:py-10 relative z-10 flex flex-col md:flex-row items-center justify-center md:justify-start gap-6">
+            <!-- Logo -->
+            <div class="flex-shrink-0 bg-white p-2 rounded-full shadow-xl transform transition hover:scale-105 duration-300">
+                <img src="https://lh5.googleusercontent.com/d/11lT0KghZEJcvK8GjV_IHeB3Xz8HqXjNj" alt="โลโก้ สพป.ระยอง เขต 2" class="w-24 h-24 md:w-32 md:h-32 object-contain rounded-full">
+            </div>
+            
+            <!-- Title -->
+            <div class="text-center md:text-left text-white">
+                <div class="inline-block bg-white/20 backdrop-blur-sm px-4 py-1 rounded-full text-sm font-medium mb-3 border border-white/30 shadow-sm">
+                    <i class="fas fa-award mr-2 text-yellow-300"></i>ประจำปีงบประมาณ 2569
+                </div>
+                <h1 class="text-3xl md:text-4xl font-bold mb-2 tracking-wide drop-shadow-md">ระบบทะเบียนเกียรติบัตร</h1>
+                <h2 class="text-lg md:text-xl font-medium text-purple-100 drop-shadow-sm">กลุ่มนิเทศ ติดตาม และประเมินผลการจัดการศึกษา</h2>
+                <p class="text-sm md:text-base text-purple-200 mt-1">สำนักงานเขตพื้นที่การศึกษาประถมศึกษาระยอง เขต 2</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow container mx-auto px-4 py-8 md:py-12 -mt-6 md:-mt-8 relative z-20">
+        
+        <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 md:p-8">
+            
+            <!-- Tools Section (Search & Info) -->
+            <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+                <div class="text-gray-600 font-medium flex items-center">
+                    <i class="fas fa-list text-rayong mr-2"></i> รายการเกียรติบัตรทั้งหมด
+                </div>
+                
+                <!-- Search Box -->
+                <div class="relative w-full md:w-1/3">
+                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                        <i class="fas fa-search text-gray-400"></i>
+                    </div>
+                    <input type="text" id="searchInput" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-xl focus:ring-rayong focus:border-rayong block w-full pl-10 p-2.5 transition-all shadow-sm" placeholder="ค้นหาชื่อ, โครงการ, เลขที่เกียรติบัตร..." onkeyup="filterTable()">
+                </div>
+            </div>
+
+            <!-- Loading Indicator -->
+            <div id="loadingIndicator" class="flex flex-col items-center justify-center py-16">
+                <div class="loader mb-4"></div>
+                <p class="text-gray-500 font-medium">กำลังโหลดข้อมูลจากฐานข้อมูล...</p>
+            </div>
+
+            <!-- Error Message -->
+            <div id="errorMessage" class="hidden bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded-r-lg">
+                <div class="flex items-center text-red-700">
+                    <i class="fas fa-exclamation-circle text-xl mr-3"></i>
+                    <div>
+                        <p class="font-bold">เกิดข้อผิดพลาดในการดึงข้อมูล</p>
+                        <p class="text-sm mt-1">โปรดตรวจสอบว่า Google Sheets ได้เปิดสิทธิ์การแชร์เป็น <span class="font-semibold">"ทุกคนที่มีลิงก์ (Anyone with the link)"</span> หรือไม่</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Table -->
+            <div class="table-container overflow-x-auto rounded-xl border border-gray-200 hidden" id="tableWrapper">
+                <table class="w-full text-sm text-left text-gray-600" id="dataTable">
+                    <thead class="text-xs text-rayong-dark uppercase bg-rayong-light border-b border-gray-200">
+                        <tr id="tableHeader">
+                            <!-- Headers will be generated here dynamically -->
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- Data rows will be generated here dynamically -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- No Results Message -->
+            <div id="noResults" class="hidden text-center py-12 text-gray-500">
+                <i class="fas fa-folder-open text-4xl text-gray-300 mb-3 block"></i>
+                ไม่พบข้อมูลที่คุณค้นหา
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-rayong-dark text-white pt-10 pb-6 mt-auto">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center border-b border-purple-800 pb-8">
+                
+                <!-- Organization Info -->
+                <div class="text-center md:text-left flex flex-col items-center md:items-start">
+                    <h3 class="font-semibold text-lg mb-2 text-purple-200">กลุ่มนิเทศ ติดตาม และประเมินผลการจัดการศึกษา</h3>
+                    <p class="text-base mb-2">สำนักงานเขตพื้นที่การศึกษาประถมศึกษาระยอง เขต 2</p>
+                    <p class="text-sm text-purple-300 font-light max-w-sm leading-relaxed">
+                        99/1 หมู่ 3 ตำบลวังหว้า<br>
+                        อำเภอแกลง จังหวัดระยอง 21110
+                    </p>
+                </div>
+                
+                <!-- Contact Info -->
+                <div class="text-center md:text-right">
+                    <div class="inline-flex flex-col items-start gap-3 text-purple-200">
+                        <a href="tel:038671180" class="flex items-center hover:text-white transition group">
+                            <div class="bg-white/10 p-2 rounded-full mr-3 group-hover:bg-white/20 transition">
+                                <i class="fas fa-phone-alt w-4 h-4 text-center"></i>
+                            </div>
+                            <span>038-671-180</span>
+                        </a>
+                        <a href="mailto:info@rayong2.go.th" class="flex items-center hover:text-white transition group">
+                            <div class="bg-white/10 p-2 rounded-full mr-3 group-hover:bg-white/20 transition">
+                                <i class="fas fa-envelope w-4 h-4 text-center"></i>
+                            </div>
+                            <span>info@rayong2.go.th</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center text-purple-400 text-sm mt-6 font-light">
+                <p>&copy; 2026 สำนักงานเขตพื้นที่การศึกษาประถมศึกษาระยอง เขต 2. สงวนลิขสิทธิ์.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Logic for Fetching Google Sheets & Searching -->
+    <script>
+        // Google Sheet Details
+        const sheetId = '17VHSAq1suDOwhlIuwnZDqA7ay8B0u94fMKo7sAVk3UU';
+        const gid = '0';
+        
+        // Google Visualization API URL
+        const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&tq&gid=${gid}`;
+
+        let globalData = [];
+
+        async function fetchSheetData() {
+            try {
+                const response = await fetch(url);
+                const text = await response.text();
+                
+                // Remove the wrapping function 'google.visualization.Query.setResponse(...)'
+                const jsonStr = text.substring(47).slice(0, -2);
+                const json = JSON.parse(jsonStr);
+
+                // Extract Headers
+                // Filter out columns that are completely empty/unnamed
+                const columns = json.table.cols
+                    .filter(c => c && c.label && c.label.trim() !== '')
+                    .map(c => c.label);
+                
+                const colCount = columns.length;
+
+                // Extract Rows
+                const rows = json.table.rows.map(r => {
+                    return r.c.slice(0, colCount).map(cell => {
+                        if (!cell) return '';
+                        // Use formatted value (f) if available, otherwise raw value (v)
+                        return cell.f !== undefined ? cell.f : (cell.v !== null ? cell.v : '');
+                    });
+                });
+                
+                // Exclude empty rows
+                const validRows = rows.filter(row => row.some(cell => String(cell).trim() !== ''));
+
+                globalData = validRows;
+
+                renderTable(columns, validRows);
+                
+                document.getElementById('loadingIndicator').classList.add('hidden');
+                document.getElementById('tableWrapper').classList.remove('hidden');
+
+            } catch (error) {
+                console.error("Error fetching data: ", error);
+                document.getElementById('loadingIndicator').classList.add('hidden');
+                document.getElementById('errorMessage').classList.remove('hidden');
+            }
+        }
+
+        function renderTable(headers, rows) {
+            const headEl = document.getElementById('tableHeader');
+            const bodyEl = document.getElementById('tableBody');
+            
+            // หา index ของคอลัมน์ "url" และ "โครงการ/กิจกรรม"
+            const urlColIndex = headers.findIndex(h => h && h.toLowerCase().includes('url'));
+            const projColIndex = headers.findIndex(h => h && (h.includes('โครงการ') || h.includes('กิจกรรม')));
+
+            // Build Headers
+            headEl.innerHTML = '';
+            headers.forEach((headerText, index) => {
+                // ข้ามการแสดงผลหัวคอลัมน์ URL เพื่อไม่ให้รกตาราง
+                if (index === urlColIndex) return;
+
+                const th = document.createElement('th');
+                th.scope = 'col';
+                th.className = 'px-6 py-4 whitespace-nowrap font-semibold';
+                
+                // เปลี่ยนชื่อหัวคอลัมน์แรกให้เป็น "ลำดับที่" เสมอ
+                if (index === 0) {
+                    th.textContent = 'ลำดับที่';
+                } else {
+                    th.textContent = headerText;
+                }
+                
+                headEl.appendChild(th);
+            });
+
+            // Build Body
+            bodyEl.innerHTML = '';
+            rows.forEach((row, rowIndex) => {
+                const tr = document.createElement('tr');
+                tr.className = 'bg-white border-b hover:bg-purple-50 transition-colors duration-150 group';
+                
+                // ดึงค่า URL ของแถวนี้ (ถ้ามีคอลัมน์ url)
+                const urlValue = urlColIndex !== -1 ? String(row[urlColIndex]).trim() : '';
+                const isValidUrl = urlValue.startsWith('http://') || urlValue.startsWith('https://');
+
+                row.forEach((cellData, colIndex) => {
+                    // ข้ามการแสดงผลเซลล์ของคอลัมน์ URL
+                    if (colIndex === urlColIndex) return;
+
+                    const td = document.createElement('td');
+                    td.className = 'px-6 py-4 text-gray-700';
+                    
+                    const stringData = String(cellData);
+
+                    // ถ้าเป็นคอลัมน์โครงการ และมี URL ให้ทำข้อความเป็นลิงก์สามารถคลิกได้
+                    if (colIndex === projColIndex && isValidUrl && stringData !== '') {
+                        td.innerHTML = `<a href="${urlValue}" target="_blank" class="text-rayong hover:text-rayong-dark font-medium underline underline-offset-4 decoration-purple-300 hover:decoration-rayong transition duration-200">
+                            ${stringData} <i class="fas fa-download ml-1 text-xs"></i>
+                        </a>`;
+                    }
+                    // Basic link detection (สำหรับเซลล์อื่นๆ ที่อาจจะเป็นลิงก์)
+                    else if(stringData.startsWith('http://') || stringData.startsWith('https://')) {
+                        td.innerHTML = `<a href="${stringData}" target="_blank" class="inline-flex items-center px-3 py-1 bg-rayong-light text-rayong hover:bg-rayong hover:text-white rounded-full text-xs font-medium transition duration-200"><i class="fas fa-external-link-alt mr-1"></i> เปิดดูลิงก์</a>`;
+                    } else {
+                        td.textContent = stringData;
+                    }
+
+                    // Bold the first column (ลำดับที่)
+                    if(colIndex === 0) {
+                        td.classList.add('font-medium', 'text-gray-900');
+                    }
+                    
+                    tr.appendChild(td);
+                });
+                
+                bodyEl.appendChild(tr);
+            });
+            
+            if(rows.length === 0) {
+                 document.getElementById('noResults').classList.remove('hidden');
+                 document.getElementById('tableWrapper').classList.add('hidden');
+            } else {
+                 document.getElementById('noResults').classList.add('hidden');
+                 document.getElementById('tableWrapper').classList.remove('hidden');
+            }
+        }
+
+        // Search functionality
+        function filterTable() {
+            const input = document.getElementById("searchInput");
+            const filter = input.value.toUpperCase();
+            const table = document.getElementById("dataTable");
+            const tr = table.getElementsByTagName("tr");
+            let visibleCount = 0;
+
+            // Loop through all table rows, and hide those who don't match the search query (skip header)
+            for (let i = 1; i < tr.length; i++) {
+                let rowMatched = false;
+                const td = tr[i].getElementsByTagName("td");
+                
+                for (let j = 0; j < td.length; j++) {
+                    if (td[j]) {
+                        const txtValue = td[j].textContent || td[j].innerText;
+                        if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                            rowMatched = true;
+                            break;
+                        }
+                    }
+                }
+                
+                if (rowMatched) {
+                    tr[i].style.display = "";
+                    visibleCount++;
+                } else {
+                    tr[i].style.display = "none";
+                }
+            }
+            
+            // Show/Hide 'No Results' message
+            if (visibleCount === 0 && globalData.length > 0) {
+                document.getElementById('noResults').classList.remove('hidden');
+                document.getElementById('tableWrapper').classList.add('hidden');
+            } else if (globalData.length > 0) {
+                document.getElementById('noResults').classList.add('hidden');
+                document.getElementById('tableWrapper').classList.remove('hidden');
+            }
+        }
+
+        // Initialize fetching on page load
+        window.onload = fetchSheetData;
+    </script>
+</body>
+</html>
