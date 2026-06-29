@@ -90,7 +90,7 @@
             <!-- Title -->
             <div class="text-center md:text-left text-white">
                 <div class="inline-block bg-white/20 backdrop-blur-sm px-4 py-1 rounded-full text-sm font-medium mb-3 border border-white/30 shadow-sm">
-                    <i class="fas fa-award mr-2 text-yellow-300"></i>ประจำปีงบประมาณ 2569
+                    <i class="fas fa-award mr-2 text-yellow-300"></i><span id="budgetYearText">กำลังโหลด...</span>
                 </div>
                 <h1 class="text-3xl md:text-4xl font-bold mb-2 tracking-wide drop-shadow-md">ระบบทะเบียนเกียรติบัตร</h1>
                 <h2 class="text-lg md:text-xl font-medium text-purple-100 drop-shadow-sm">กลุ่มนิเทศ ติดตาม และประเมินผลการจัดการศึกษา</h2>
@@ -203,16 +203,55 @@
     <script>
         // Google Sheet Details
         const sheetId = '17VHSAq1suDOwhlIuwnZDqA7ay8B0u94fMKo7sAVk3UU';
-        const gid = '0';
+        const gid = '0'; // Sheet ข้อมูลหลัก
         
-        // Google Visualization API URL
-        const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&tq&gid=${gid}`;
+        // Google Visualization API URLs
+        const dataUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&tq&gid=${gid}`;
+        const settingUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=setting`;
 
         let globalData = [];
 
+        // ฟังก์ชันดึงค่าจาก sheet "setting"
+        async function fetchSettings() {
+            try {
+                const response = await fetch(settingUrl);
+                const text = await response.text();
+                const jsonStr = text.substring(47).slice(0, -2);
+                const json = JSON.parse(jsonStr);
+
+                // หา index ของคอลัมน์ชื่อ 'year'
+                const columns = json.table.cols.map(c => c ? (c.label || '').toLowerCase() : '');
+                const yearColIndex = columns.findIndex(col => col === 'year' || col.includes('year'));
+
+                if (yearColIndex !== -1 && json.table.rows.length > 0) {
+                    const cell = json.table.rows[0].c[yearColIndex];
+                    // ดึงค่า string หรือ number ออกมา
+                    let yearValue = cell ? (cell.f !== undefined ? String(cell.f) : String(cell.v)) : '';
+                    yearValue = yearValue.trim();
+
+                    if (yearValue) {
+                        const textElement = document.getElementById('budgetYearText');
+                        // เช็คถ้าพิมพ์มาเป็นแค่ตัวเลขปี พ.ศ. ให้เติมคำข้างหน้า
+                        if (/^\d{4}$/.test(yearValue)) {
+                            textElement.textContent = 'ประจำปีงบประมาณ พ.ศ. ' + yearValue;
+                        } else {
+                            // ถ้าพิมพ์มาเต็มๆ เช่น "ปีการศึกษา 2569" ก็แสดงผลตามนั้น
+                            textElement.textContent = yearValue;
+                        }
+                    }
+                } else {
+                    document.getElementById('budgetYearText').textContent = 'ประจำปีงบประมาณ พ.ศ.';
+                }
+            } catch (error) {
+                console.error("Error fetching settings: ", error);
+                document.getElementById('budgetYearText').textContent = 'ประจำปีงบประมาณ พ.ศ.';
+            }
+        }
+
+        // ฟังก์ชันดึงข้อมูลตารางเกียรติบัตร
         async function fetchSheetData() {
             try {
-                const response = await fetch(url);
+                const response = await fetch(dataUrl);
                 const text = await response.text();
                 
                 // Remove the wrapping function 'google.visualization.Query.setResponse(...)'
@@ -375,7 +414,10 @@
         }
 
         // Initialize fetching on page load
-        window.onload = fetchSheetData;
+        window.onload = () => {
+            fetchSettings();
+            fetchSheetData();
+        };
     </script>
 </body>
 </html>
