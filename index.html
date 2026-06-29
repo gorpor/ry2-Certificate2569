@@ -229,22 +229,14 @@
                     let yearValue = cell ? (cell.f !== undefined ? String(cell.f) : String(cell.v)) : '';
                     yearValue = yearValue.trim();
 
-                    if (yearValue) {
-                        const textElement = document.getElementById('budgetYearText');
-                        // เช็คถ้าพิมพ์มาเป็นแค่ตัวเลขปี พ.ศ. ให้เติมคำข้างหน้า
-                        if (/^\d{4}$/.test(yearValue)) {
-                            textElement.textContent = 'ประจำปีงบประมาณ พ.ศ. ' + yearValue;
-                        } else {
-                            // ถ้าพิมพ์มาเต็มๆ เช่น "ปีการศึกษา 2569" ก็แสดงผลตามนั้น
-                            textElement.textContent = yearValue;
-                        }
-                    }
+                    // ดึงค่ามาตรงๆ โดยไม่เพิ่มข้อความ
+                    document.getElementById('budgetYearText').textContent = yearValue;
                 } else {
-                    document.getElementById('budgetYearText').textContent = 'ประจำปีงบประมาณ พ.ศ.';
+                    document.getElementById('budgetYearText').textContent = '';
                 }
             } catch (error) {
                 console.error("Error fetching settings: ", error);
-                document.getElementById('budgetYearText').textContent = 'ประจำปีงบประมาณ พ.ศ.';
+                document.getElementById('budgetYearText').textContent = '';
             }
         }
 
