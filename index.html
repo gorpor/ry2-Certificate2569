@@ -186,17 +186,17 @@
             // กำหนด Emoji หัวตาราง
             const getEmoji = (h, index) => {
                 if (index === 0) return '🔢 ลำดับที่';
-                if (h.includes('วันที่')) return '📅 ' + h;
-                if (h.includes('โครงการ') || h.includes('กิจกรรม')) return '📝 ' + h;
-                if (h.includes('รับผิดชอบ')) return '👤 ' + h;
+                if (h.includes('วันที่')) return '' + h;
+                if (h.includes('โครงการ') || h.includes('กิจกรรม')) return '' + h;
+                if (h.includes('รับผิดชอบ')) return '' + h;
                 return h;
             };
 
             // กำหนดความกว้าง % (รวมต้องไม่เกิน 100)
             const getWidth = (index) => {
-                if (index === 0) return '5%';
+                if (index === 0) return '7%';
                 if (index === dateColIndex) return '15%';
-                if (index === projColIndex) return '65%';
+                if (index === projColIndex) return '63%';
                 if (index === respColIndex) return '15%';
                 return 'auto';
             };
