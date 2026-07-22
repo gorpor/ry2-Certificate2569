@@ -160,14 +160,32 @@
                 const text = await response.text();
                 const json = JSON.parse(text.substring(47).slice(0, -2));
                 
-                const headers = json.table.cols.map(c => c && c.label ? c.label : '');
-                const colCount = headers.length;
+                // ดึงหัวตารางมาทั้งหมดก่อน
+                const allHeaders = json.table.cols.map(c => c && c.label ? c.label : '');
                 
-                const rows = json.table.rows.map(r => r.c.slice(0, colCount).map(c => c ? (c.f !== undefined ? c.f : (c.v !== null ? c.v : '')) : ''));
+                // สร้างอาร์เรย์เก็บ index ของคอลัมน์ที่ "มีชื่อหัวตาราง" หรือเป็นคอลัมน์แรกสุด (เผื่อคอลัมน์แรกไม่มีชื่อ)
+                const validColIndices = [];
+                allHeaders.forEach((h, index) => {
+                    if (index === 0 || h.trim() !== '') {
+                        validColIndices.push(index);
+                    }
+                });
+
+                // กรองเอาเฉพาะ headers ที่ถูกต้อง
+                const validHeaders = validColIndices.map(index => allHeaders[index]);
                 
+                // กรองข้อมูลในแต่ละแถว ให้ดึงมาเฉพาะเซลล์ที่ตรงกับ index ที่เราต้องการ
+                const rows = json.table.rows.map(r => {
+                    return validColIndices.map(colIndex => {
+                        const c = r.c[colIndex];
+                        return c ? (c.f !== undefined ? c.f : (c.v !== null ? c.v : '')) : '';
+                    });
+                });
+                
+                // กรองแถวว่างทิ้ง
                 const validRows = rows.filter(row => row.some(cell => String(cell).trim() !== ''));
                 
-                renderTable(headers, validRows);
+                renderTable(validHeaders, validRows);
             } catch (e) {
                 console.error("Error fetching data:", e);
                 document.getElementById('tableBody').innerHTML = '<tr><td colspan="10" class="text-center py-8 text-red-500">เกิดข้อผิดพลาดในการดึงข้อมูล กรุณาตรวจสอบการแชร์ไฟล์ Google Sheets</td></tr>';
@@ -218,11 +236,7 @@
 
                 let html = '<tr class="bg-white border-b hover:bg-purple-50 transition-colors duration-150">';
                 row.forEach((cell, colIndex) => {
-                    // 1. ซ่อนคอลัมน์ url อย่างตั้งใจ
-                    // 2. ถ้าไม่ใช่คอลัมน์ url แต่ในแถวนั้นไม่มีข้อมูล (ว่างเปล่า) และไม่มีชื่อหัวตาราง ให้ข้ามการสร้าง <td> ไปเลย เพื่อป้องกันตารางว่างในมือถือ
-                    if (colIndex === urlColIndex || (!headers[colIndex] && String(cell).trim() === '')) {
-                        return; 
-                    }
+                    if (colIndex === urlColIndex) return;
 
                     let cellContent = String(cell);
                     
