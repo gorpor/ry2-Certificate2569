@@ -185,18 +185,18 @@
 
             // กำหนด Emoji หัวตาราง
             const getEmoji = (h, index) => {
-                if (index === 0) return '🔢 ที่';
-                if (h.includes('วันที่')) return '' + h;
-                if (h.includes('โครงการ') || h.includes('กิจกรรม')) return '' + h;
-                if (h.includes('รับผิดชอบ')) return '' + h;
+                if (index === 0) return '🔢 ลำดับที่';
+                if (h.includes('วันที่')) return '📅 ' + h;
+                if (h.includes('โครงการ') || h.includes('กิจกรรม')) return '📝 ' + h;
+                if (h.includes('รับผิดชอบ')) return '👤 ' + h;
                 return h;
             };
 
             // กำหนดความกว้าง % (รวมต้องไม่เกิน 100)
             const getWidth = (index) => {
-                if (index === 0) return '7%';
+                if (index === 0) return '5%';
                 if (index === dateColIndex) return '15%';
-                if (index === projColIndex) return '60%';
+                if (index === projColIndex) return '65%';
                 if (index === respColIndex) return '15%';
                 return 'auto';
             };
@@ -218,12 +218,18 @@
 
                 let html = '<tr class="bg-white border-b hover:bg-purple-50 transition-colors duration-150">';
                 row.forEach((cell, colIndex) => {
-                    if (colIndex === urlColIndex) return;
+                    // 1. ซ่อนคอลัมน์ url อย่างตั้งใจ
+                    // 2. ถ้าไม่ใช่คอลัมน์ url แต่ในแถวนั้นไม่มีข้อมูล (ว่างเปล่า) และไม่มีชื่อหัวตาราง ให้ข้ามการสร้าง <td> ไปเลย เพื่อป้องกันตารางว่างในมือถือ
+                    if (colIndex === urlColIndex || (!headers[colIndex] && String(cell).trim() === '')) {
+                        return; 
+                    }
 
                     let cellContent = String(cell);
                     
                     if (colIndex === projColIndex && isValidUrl && cellContent !== '') {
                         cellContent = `<a href="${urlValue}" target="_blank" class="text-rayong hover:text-rayong-dark font-medium underline underline-offset-4 decoration-purple-300 hover:decoration-rayong transition duration-200 break-words">${cellContent} <i class="fas fa-download ml-1 text-[0.85em]"></i></a>`;
+                    } else if (cellContent.startsWith('http')) {
+                        cellContent = `<a href="${cellContent}" target="_blank" class="inline-flex items-center px-3 py-1 bg-rayong-light text-rayong hover:bg-rayong hover:text-white rounded-full text-[0.85em] font-medium transition duration-200"><i class="fas fa-external-link-alt mr-1"></i> เปิดดูลิงก์</a>`;
                     }
 
                     let tdClass = 'px-4 py-4 align-top break-words';
